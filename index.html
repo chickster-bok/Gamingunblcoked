@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>YT Unblocked Helper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <h1>YT Unblocked Helper</h1>
+    <p class="sub">Open the site, auto-fill a YouTube link, then copy the generated URL.</p>
+
+    <section class="card">
+      <label for="ytUrl">YouTube URL</label>
+      <input id="ytUrl" type="url" placeholder="https://www.youtube.com/watch?v=VIDEO_ID" />
+      <div class="row">
+        <button id="openSite">Open youtubeunblocked.live</button>
+        <button id="copyInput">Copy input URL</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Step 1 — Install / use the Autofill bookmarklet</h2>
+      <p>Drag this to your bookmarks bar, or right-click &rarr; “Bookmark link”. Then visit youtubeunblocked.live and click it.</p>
+      <a id="autofillLink" class="bookmarklet" href="#">Autofill &amp; Go</a>
+      <p class="hint">When clicked on youtubeunblocked.live, it will prompt you for a YouTube URL, place it into the big field, and press <b>Go!</b></p>
+    </section>
+
+    <section class="card">
+      <h2>Step 2 — Copy the final link</h2>
+      <p>After the proxy opens the video page, click this bookmarklet to copy the current page URL.</p>
+      <a id="copyUrlLink" class="bookmarklet" href="#">Copy Current URL</a>
+      <p class="hint">Works on most modern browsers; includes a fallback if clipboard permissions are blocked.</p>
+    </section>
+
+    <footer>
+      <p>Tip: you can also click “Open youtubeunblocked.live” above, then run the bookmarklet there.</p>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
