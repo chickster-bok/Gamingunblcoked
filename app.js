@@ -4,19 +4,61 @@ const openBtn = document.getElementById('openSite');
 const copyInputBtn = document.getElementById('copyInput');
 const autofillLink = document.getElementById('autofillLink');
 const copyUrlLink = document.getElementById('copyUrlLink');
+const resultCard = document.getElementById('resultCard');
+const resultUrlEl = document.getElementById('resultUrl');
+const copyResultBtn = document.getElementById('copyResult');
+const resultStatus = document.getElementById('resultStatus');
+
+const PROXY_ORIGINS = new Set([
+  'https://youtubeunblocked.live',
+  'http://youtubeunblocked.live'
+]);
 
 openBtn.addEventListener('click', () => {
-  window.open('https://youtubeunblocked.live', '_blank', 'noopener');
+  const win = window.open('https://youtubeunblocked.live', '_blank', 'noopener');
+  if (!win) {
+    alert('Allow pop-ups for this site so the helper can open youtubeunblocked.live.');
+    return;
+  }
+  showResultCard('Waiting for the proxy to send back a link…');
+  toast('Opened youtubeunblocked.live in a new tab. Run the bookmarklets there.');
 });
 
 copyInputBtn.addEventListener('click', async () => {
   const v = ytInput.value.trim();
   if (!v) return alert('Add a YouTube URL first.');
-  try {
-    await navigator.clipboard.writeText(v);
-    toast('Input URL copied to clipboard.');
-  } catch {
-    fallbackCopy(v);
+  await copyText(v, 'Input URL copied to clipboard.');
+});
+
+copyResultBtn?.addEventListener('click', async () => {
+  const text = resultUrlEl?.textContent?.trim();
+  if (!text || text.includes('…')) {
+    alert('No proxied link yet. Open the proxy tab and use the bookmarklets first.');
+    return;
+  }
+  await copyText(text, 'Proxied link copied again.');
+});
+
+window.addEventListener('message', async (event) => {
+  const { data, origin } = event;
+  if (!data || typeof data !== 'object') return;
+  if (data.type !== 'proxied-url') return;
+  if (origin && origin !== 'null' && !PROXY_ORIGINS.has(origin)) return;
+
+  const url = typeof data.url === 'string' ? data.url.trim() : '';
+  if (!url) return;
+
+  showResultCard('Link received from proxy.');
+  if (resultUrlEl) resultUrlEl.textContent = url;
+  const copied = await copyText(url, 'Proxy URL copied to clipboard!');
+  if (!copied) {
+    toast('Proxy URL ready below. Click “Copy proxied link again”.');
+  }
+
+  if (resultStatus) {
+    const ts = new Date().toLocaleTimeString();
+    const title = typeof data.title === 'string' ? data.title.trim() : '';
+    resultStatus.textContent = `Last received at ${ts}${title ? ` — ${title}` : ''}`;
   }
 });
 
@@ -43,10 +85,9 @@ javascript:(async()=>{try{
 
 // 2) Copy current page URL (run after the proxy opens the video)
 const copyUrlCode = `
-javascript:(()=>{const t=location.href;
-  (navigator.clipboard?navigator.clipboard.writeText(t).then(()=>alert('Copied link to clipboard!')).catch(()=>fc()):fc());
-  function fc(){const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy'); ta.remove(); alert('Copied link (fallback).');}
+javascript:(()=>{const t=location.href;const send=()=>{try{window.opener&&window.opener.postMessage({type:'proxied-url',url:t,title:document.title||''},'*');}catch(e){}};
+  const fallback=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();send();alert('Copied link (fallback).');};
+  (navigator.clipboard?navigator.clipboard.writeText(t).then(()=>{send();alert('Copied link to clipboard!');}).catch(()=>fallback()):fallback());
 })();`;
 
 // Set bookmarklet hrefs
@@ -65,8 +106,24 @@ function toast(msg){
   document.body.appendChild(el);
   setTimeout(()=>el.remove(), 1800);
 }
-function fallbackCopy(text){
+function fallbackCopy(text, msg='Copied (fallback).'){
   const ta=document.createElement('textarea');
   ta.value=text; document.body.appendChild(ta); ta.select();
-  document.execCommand('copy'); ta.remove(); toast('Copied (fallback).');
+  document.execCommand('copy'); ta.remove(); toast(msg);
+}
+async function copyText(text, message){
+  if (!text) return false;
+  try {
+    await navigator.clipboard.writeText(text);
+    if (message) toast(message);
+    return true;
+  } catch {
+    fallbackCopy(text, message || 'Copied (fallback).');
+    return false;
+  }
+}
+function showResultCard(status){
+  if (!resultCard) return;
+  resultCard.classList.remove('hidden');
+  if (status && resultStatus) resultStatus.textContent = status;
 }
