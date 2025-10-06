@@ -32,23 +32,22 @@
       <p id="resultStatus" class="hint"></p>
     </section>
 
-    <details class="card legacy">
-      <summary>Legacy bookmarklet workflow (optional)</summary>
-      <div class="legacy-content">
-        <section>
-          <h2>Step 1 — Install / use the Autofill bookmarklet</h2>
-          <p>Drag this to your bookmarks bar, or right-click &rarr; “Bookmark link”. Then visit youtubeunblocked.live and click it.</p>
-          <a id="autofillLink" class="bookmarklet" href="#">Autofill &amp; Go</a>
-          <p class="hint">When clicked on youtubeunblocked.live, it will prompt you for a YouTube URL, place it into the big field, and press <b>Go!</b></p>
-        </section>
-        <section>
-          <h2>Step 2 — Copy the final link</h2>
-          <p>After the proxy opens the video page, click this bookmarklet to copy the current page URL.</p>
-          <a id="copyUrlLink" class="bookmarklet" href="#">Copy Current URL</a>
-          <p class="hint">Works on most modern browsers; includes a fallback if clipboard permissions are blocked.</p>
-        </section>
+    <section class="card">
+      <h2>Step 2 — Copy the final link</h2>
+      <p>After the proxy opens the video page, click this bookmarklet to copy the current page URL. It will also send the link back to this helper so it can auto-copy it for you.</p>
+      <a id="copyUrlLink" class="bookmarklet" href="#">Copy Current URL</a>
+      <p class="hint">Works on most modern browsers; includes a fallback if clipboard permissions are blocked.</p>
+    </section>
+
+    <section id="resultCard" class="card hidden">
+      <h2>Step 3 — Collected proxy link</h2>
+      <p class="hint">Keep this page open. When the bookmarklet sends the link back, it appears here and is copied for you.</p>
+      <div class="result-box">
+        <code id="resultUrl">https://youtubeunblocked.live/…</code>
+        <button id="copyResult">Copy proxied link again</button>
       </div>
-    </details>
+      <p id="resultStatus" class="hint"></p>
+    </section>
 
     <footer>
       <p>Need another? Just paste a new YouTube link above.</p>

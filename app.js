@@ -9,43 +9,61 @@ const copyResultBtn = document.getElementById('copyResult');
 const resultStatus = document.getElementById('resultStatus');
 const autofillLink = document.getElementById('autofillLink');
 const copyUrlLink = document.getElementById('copyUrlLink');
+const resultCard = document.getElementById('resultCard');
+const resultUrlEl = document.getElementById('resultUrl');
+const copyResultBtn = document.getElementById('copyResult');
+const resultStatus = document.getElementById('resultStatus');
 
-// --- main flow ------------------------------------------------------------
-openBtn?.addEventListener('click', () => {
-  window.open('https://youtubeunblocked.live', '_blank', 'noopener');
+const PROXY_ORIGINS = new Set([
+  'https://youtubeunblocked.live',
+  'http://youtubeunblocked.live'
+]);
+
+openBtn.addEventListener('click', () => {
+  const win = window.open('https://youtubeunblocked.live', '_blank', 'noopener');
+  if (!win) {
+    alert('Allow pop-ups for this site so the helper can open youtubeunblocked.live.');
+    return;
+  }
+  showResultCard('Waiting for the proxy to send back a link…');
+  toast('Opened youtubeunblocked.live in a new tab. Run the bookmarklets there.');
 });
 
-generateBtn?.addEventListener('click', async () => {
-  const raw = ytInput?.value.trim();
-  if (!raw) {
-    alert('Enter a YouTube link to convert.');
-    ytInput?.focus();
+copyInputBtn.addEventListener('click', async () => {
+  const v = ytInput.value.trim();
+  if (!v) return alert('Add a YouTube URL first.');
+  await copyText(v, 'Input URL copied to clipboard.');
+});
+
+copyResultBtn?.addEventListener('click', async () => {
+  const text = resultUrlEl?.textContent?.trim();
+  if (!text || text.includes('…')) {
+    alert('No proxied link yet. Open the proxy tab and use the bookmarklets first.');
     return;
   }
+  await copyText(text, 'Proxied link copied again.');
+});
 
-  const proxyUrl = buildProxyUrl(raw);
-  if (!proxyUrl) {
-    alert('That does not look like a valid YouTube link.');
-    return;
-  }
+window.addEventListener('message', async (event) => {
+  const { data, origin } = event;
+  if (!data || typeof data !== 'object') return;
+  if (data.type !== 'proxied-url') return;
+  if (origin && origin !== 'null' && !PROXY_ORIGINS.has(origin)) return;
 
-  if (resultUrlEl) {
-    resultUrlEl.textContent = proxyUrl;
-    resultUrlEl.title = proxyUrl;
-  }
+  const url = typeof data.url === 'string' ? data.url.trim() : '';
+  if (!url) return;
 
-  showResultCard();
-
-  const copied = await copyText(proxyUrl, 'Unblocked link copied to clipboard.');
+  showResultCard('Link received from proxy.');
+  if (resultUrlEl) resultUrlEl.textContent = url;
+  const copied = await copyText(url, 'Proxy URL copied to clipboard!');
   if (!copied) {
-    toast('Link ready below. Tap copy if needed.');
+    toast('Proxy URL ready below. Click “Copy proxied link again”.');
   }
 
   if (resultStatus) {
     const ts = new Date().toLocaleTimeString();
-    resultStatus.textContent = copied
-      ? `Generated at ${ts}`
-      : `Generated at ${ts} — copy using the button below.`;
+    const title = typeof data.title === 'string' ? data.title.trim() : '';
+    resultStatus.textContent = `Last received at ${ts}${title ? ` — ${title}` : ''}`;
   }
 });
 
@@ -93,10 +111,9 @@ javascript:(async()=>{try{
 }catch(e){ alert('Autofill error: '+e.message); }})();`;
 
 const copyUrlCode = `
-javascript:(()=>{const t=location.href;
-  (navigator.clipboard?navigator.clipboard.writeText(t).then(()=>alert('Copied link to clipboard!')).catch(()=>fc()):fc());
-  function fc(){const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy'); ta.remove(); alert('Copied link (fallback).');}
+javascript:(()=>{const t=location.href;const send=()=>{try{window.opener&&window.opener.postMessage({type:'proxied-url',url:t,title:document.title||''},'*');}catch(e){}};
+  const fallback=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();send();alert('Copied link (fallback).');};
+  (navigator.clipboard?navigator.clipboard.writeText(t).then(()=>{send();alert('Copied link to clipboard!');}).catch(()=>fallback()):fallback());
 })();`;
 
 autofillLink && (autofillLink.href = autofillCode.trim());
@@ -114,13 +131,11 @@ function toast(msg){
   document.body.appendChild(el);
   setTimeout(()=>el.remove(), 1800);
 }
-
 function fallbackCopy(text, msg='Copied (fallback).'){
   const ta=document.createElement('textarea');
   ta.value=text; document.body.appendChild(ta); ta.select();
   document.execCommand('copy'); ta.remove(); toast(msg);
 }
-
 async function copyText(text, message){
   if (!text) return false;
   try {
@@ -132,48 +147,8 @@ async function copyText(text, message){
     return false;
   }
 }
-
-function showResultCard(){
+function showResultCard(status){
   if (!resultCard) return;
   resultCard.classList.remove('hidden');
-}
-
-function buildProxyUrl(raw){
-  if (!raw) return null;
-
-  let value = raw.trim();
-  if (!value) return null;
-
-  if (!/^[a-zA-Z][\w+.-]*:/.test(value)) {
-    value = `https://${value}`;
-  }
-
-  let url;
-  try {
-    url = new URL(value);
-  } catch {
-    return null;
-  }
-
-  const hostname = url.hostname.replace(/^www\./i, '').toLowerCase();
-
-  if (hostname === 'youtu.be') {
-    const id = url.pathname.replace(/^\//, '').trim();
-    if (!id) return null;
-    const proxy = new URL('https://youtubeunblocked.live/watch');
-    proxy.searchParams.set('v', id);
-    url.searchParams.forEach((v, key) => {
-      if (key.toLowerCase() !== 'v') proxy.searchParams.set(key, v);
-    });
-    if (url.hash) proxy.hash = url.hash;
-    return proxy.toString();
-  }
-
-  if (hostname.endsWith('youtube.com')) {
-    url.protocol = 'https:';
-    url.hostname = 'youtubeunblocked.live';
-    return url.toString();
-  }
-
-  return null;
+  if (status && resultStatus) resultStatus.textContent = status;
 }
