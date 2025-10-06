@@ -21,9 +21,9 @@ body {
 .hidden { display: none !important; }
 
 .wrap {
-  max-width: 840px;
+  max-width: 760px;
   margin: 48px auto;
-  padding: 0 16px;
+  padding: 0 16px 64px;
 }
 
 h1 { font-size: 32px; margin: 0 0 6px; }
@@ -37,6 +37,30 @@ h1 { font-size: 32px; margin: 0 0 6px; }
   margin: 18px 0;
   box-shadow: var(--shadow);
 }
+
+.card.primary { border-color: rgba(255,255,255,.12); }
+.card.legacy { padding: 0; overflow: hidden; }
+.card.legacy > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card.legacy > summary::marker { content: ''; }
+.card.legacy > summary::-webkit-details-marker { display: none; }
+.card.legacy > summary::after {
+  content: '\25be';
+  margin-left: auto;
+  color: var(--muted);
+  transition: transform .2s ease;
+}
+.card.legacy[open] > summary { border-bottom: 1px solid rgba(255,255,255,.08); }
+.card.legacy[open] > summary::after { transform: rotate(-180deg); }
+.card.legacy .legacy-content { padding: 0 18px 18px; }
+.card.legacy section + section { margin-top: 18px; }
 
 label { display: block; margin-bottom: 6px; color: var(--muted); }
 
@@ -56,7 +80,7 @@ input[type="url"]::placeholder { color: #7f8aa6; }
 
 button, .bookmarklet {
   display: inline-block;
-  padding: 10px 14px;
+  padding: 10px 18px;
   border-radius: 999px;
   background: var(--accent);
   color: #08111f;
@@ -67,8 +91,21 @@ button, .bookmarklet {
   transition: transform .06s ease, filter .2s ease;
 }
 button:hover, .bookmarklet:hover { filter: brightness(1.05); transform: translateY(-1px); }
+button:active { transform: translateY(0); filter: brightness(.97); }
 
-.bookmarklet { background: var(--accent-2); }
+button.secondary {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.18);
+  color: var(--text);
+}
+button.ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+}
+button.ghost:hover { filter: none; color: var(--text); }
+
+.bookmarklet { background: var(--accent-2); color: #2d1800; padding: 10px 14px; }
 
 h2 { margin: 8px 0 10px; font-size: 20px; }
 .hint { color: var(--muted); margin-top: 8px; }
@@ -93,3 +130,10 @@ h2 { margin: 8px 0 10px; font-size: 20px; }
 }
 
 footer { color: var(--muted); margin-top: 24px; text-align: center; }
+
+@media (max-width: 520px) {
+  .row { flex-direction: column; }
+  button, .bookmarklet { width: 100%; text-align: center; }
+  .result-box { flex-direction: column; align-items: stretch; }
+  .result-box code { width: 100%; }
+}

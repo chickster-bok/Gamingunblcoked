@@ -1,7 +1,12 @@
-// --- basic helpers
+// --- element references ---------------------------------------------------
 const ytInput = document.getElementById('ytUrl');
 const openBtn = document.getElementById('openSite');
 const copyInputBtn = document.getElementById('copyInput');
+const generateBtn = document.getElementById('generateLink');
+const resultCard = document.getElementById('resultCard');
+const resultUrlEl = document.getElementById('resultUrl');
+const copyResultBtn = document.getElementById('copyResult');
+const resultStatus = document.getElementById('resultStatus');
 const autofillLink = document.getElementById('autofillLink');
 const copyUrlLink = document.getElementById('copyUrlLink');
 const resultCard = document.getElementById('resultCard');
@@ -62,8 +67,30 @@ window.addEventListener('message', async (event) => {
   }
 });
 
-// --- Bookmarklet generators -------------------------------------------
-// 1) Autofill & Go (runs ON youtubeunblocked.live). Prompts for URL.
+copyInputBtn?.addEventListener('click', async () => {
+  const value = ytInput?.value.trim();
+  if (!value) {
+    alert('Add a YouTube URL first.');
+    ytInput?.focus();
+    return;
+  }
+  await copyText(value, 'Original link copied to clipboard.');
+});
+
+copyResultBtn?.addEventListener('click', async () => {
+  const text = resultUrlEl?.textContent?.trim();
+  if (!text || text.includes('…')) {
+    alert('Generate an unblocked link first.');
+    return;
+  }
+  const copied = await copyText(text, 'Unblocked link copied again.');
+  if (copied && resultStatus) {
+    const ts = new Date().toLocaleTimeString();
+    resultStatus.textContent = `Copied again at ${ts}`;
+  }
+});
+
+// --- legacy bookmarklet helpers ------------------------------------------
 const autofillCode = `
 javascript:(async()=>{try{
   const u = prompt('YouTube URL to unblock:');
@@ -83,18 +110,16 @@ javascript:(async()=>{try{
   setTimeout(()=>{ (btn && btn.click()) || input.closest('form')?.submit(); }, 150);
 }catch(e){ alert('Autofill error: '+e.message); }})();`;
 
-// 2) Copy current page URL (run after the proxy opens the video)
 const copyUrlCode = `
 javascript:(()=>{const t=location.href;const send=()=>{try{window.opener&&window.opener.postMessage({type:'proxied-url',url:t,title:document.title||''},'*');}catch(e){}};
   const fallback=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();send();alert('Copied link (fallback).');};
   (navigator.clipboard?navigator.clipboard.writeText(t).then(()=>{send();alert('Copied link to clipboard!');}).catch(()=>fallback()):fallback());
 })();`;
 
-// Set bookmarklet hrefs
-autofillLink.href = autofillCode.trim();
-copyUrlLink.href = copyUrlCode.trim();
+autofillLink && (autofillLink.href = autofillCode.trim());
+copyUrlLink && (copyUrlLink.href = copyUrlCode.trim());
 
-// --- tiny toast
+// --- utilities ------------------------------------------------------------
 function toast(msg){
   const el = document.createElement('div');
   el.textContent = msg;

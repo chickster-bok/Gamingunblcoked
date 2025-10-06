@@ -9,22 +9,27 @@
 <body>
   <main class="wrap">
     <h1>YT Unblocked Helper</h1>
-    <p class="sub">Open the site, auto-fill a YouTube link, then copy the generated URL.</p>
+    <p class="sub">Paste a YouTube link. We'll hand you a youtubeunblocked.live URL instantly.</p>
 
-    <section class="card">
+    <section class="card primary">
       <label for="ytUrl">YouTube URL</label>
       <input id="ytUrl" type="url" placeholder="https://www.youtube.com/watch?v=VIDEO_ID" />
       <div class="row">
-        <button id="openSite">Open youtubeunblocked.live</button>
-        <button id="copyInput">Copy input URL</button>
+        <button id="generateLink">Get unblocked link</button>
+        <button id="copyInput" class="secondary">Copy original link</button>
+        <button id="openSite" class="ghost" type="button">Open youtubeunblocked.live</button>
       </div>
+      <p class="hint">Everything happens here—no extra tabs needed. Legacy bookmarklets live below if you still need them.</p>
     </section>
 
-    <section class="card">
-      <h2>Step 1 — Install / use the Autofill bookmarklet</h2>
-      <p>Drag this to your bookmarks bar, or right-click &rarr; “Bookmark link”. Then visit youtubeunblocked.live and click it.</p>
-      <a id="autofillLink" class="bookmarklet" href="#">Autofill &amp; Go</a>
-      <p class="hint">When clicked on youtubeunblocked.live, it will prompt you for a YouTube URL, place it into the big field, and press <b>Go!</b></p>
+    <section id="resultCard" class="card hidden">
+      <h2>Unblocked link</h2>
+      <p class="hint">Share or open this link. It points to the same video through youtubeunblocked.live.</p>
+      <div class="result-box">
+        <code id="resultUrl" title="Generated link">https://youtubeunblocked.live/…</code>
+        <button id="copyResult">Copy unblocked link</button>
+      </div>
+      <p id="resultStatus" class="hint"></p>
     </section>
 
     <section class="card">
@@ -45,7 +50,7 @@
     </section>
 
     <footer>
-      <p>Tip: you can also click “Open youtubeunblocked.live” above, then run the bookmarklet there.</p>
+      <p>Need another? Just paste a new YouTube link above.</p>
     </footer>
   </main>
 
