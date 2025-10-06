@@ -1,17 +1,25 @@
-// --- basic helpers
+// --- element references ---------------------------------------------------
 const ytInput = document.getElementById('ytUrl');
-const generateBtn = document.getElementById('generateLink');
+const openBtn = document.getElementById('openSite');
 const copyInputBtn = document.getElementById('copyInput');
+const generateBtn = document.getElementById('generateLink');
 const resultCard = document.getElementById('resultCard');
 const resultUrlEl = document.getElementById('resultUrl');
 const copyResultBtn = document.getElementById('copyResult');
 const resultStatus = document.getElementById('resultStatus');
+const autofillLink = document.getElementById('autofillLink');
+const copyUrlLink = document.getElementById('copyUrlLink');
 
-generateBtn.addEventListener('click', async () => {
-  const raw = ytInput.value.trim();
+// --- main flow ------------------------------------------------------------
+openBtn?.addEventListener('click', () => {
+  window.open('https://youtubeunblocked.live', '_blank', 'noopener');
+});
+
+generateBtn?.addEventListener('click', async () => {
+  const raw = ytInput?.value.trim();
   if (!raw) {
     alert('Enter a YouTube link to convert.');
-    ytInput.focus();
+    ytInput?.focus();
     return;
   }
 
@@ -21,21 +29,34 @@ generateBtn.addEventListener('click', async () => {
     return;
   }
 
-  if (resultUrlEl) resultUrlEl.textContent = proxyUrl;
-  showResultCard('Copied unblocked link to clipboard.');
+  if (resultUrlEl) {
+    resultUrlEl.textContent = proxyUrl;
+    resultUrlEl.title = proxyUrl;
+  }
+
+  showResultCard();
+
   const copied = await copyText(proxyUrl, 'Unblocked link copied to clipboard.');
-  if (!copied) toast('Link ready below. Tap copy if needed.');
+  if (!copied) {
+    toast('Link ready below. Tap copy if needed.');
+  }
 
   if (resultStatus) {
     const ts = new Date().toLocaleTimeString();
-    resultStatus.textContent = `Generated at ${ts}`;
+    resultStatus.textContent = copied
+      ? `Generated at ${ts}`
+      : `Generated at ${ts} — copy using the button below.`;
   }
 });
 
-copyInputBtn.addEventListener('click', async () => {
-  const v = ytInput.value.trim();
-  if (!v) return alert('Add a YouTube URL first.');
-  await copyText(v, 'Original link copied to clipboard.');
+copyInputBtn?.addEventListener('click', async () => {
+  const value = ytInput?.value.trim();
+  if (!value) {
+    alert('Add a YouTube URL first.');
+    ytInput?.focus();
+    return;
+  }
+  await copyText(value, 'Original link copied to clipboard.');
 });
 
 copyResultBtn?.addEventListener('click', async () => {
@@ -44,10 +65,44 @@ copyResultBtn?.addEventListener('click', async () => {
     alert('Generate an unblocked link first.');
     return;
   }
-  await copyText(text, 'Unblocked link copied again.');
+  const copied = await copyText(text, 'Unblocked link copied again.');
+  if (copied && resultStatus) {
+    const ts = new Date().toLocaleTimeString();
+    resultStatus.textContent = `Copied again at ${ts}`;
+  }
 });
 
-// --- tiny toast ---------------------------------------------------------
+// --- legacy bookmarklet helpers ------------------------------------------
+const autofillCode = `
+javascript:(async()=>{try{
+  const u = prompt('YouTube URL to unblock:');
+  if(!u) return;
+  const pick = (...sels)=>sels.map(s=>document.querySelector(s)).find(Boolean);
+  const input = pick(
+    'input[name="url"]','input#url','input[type="url"]','input[type="text"]',
+    'textarea[name="url"]','textarea',
+    'input[placeholder*="Enter an URL" i]','input[placeholder*="URL" i]',
+    'input[placeholder*="search" i]','input[aria-label*="url" i]'
+  );
+  if(!input){ alert('Could not find the URL field.'); return; }
+  input.value=''; input.dispatchEvent(new Event('input',{bubbles:true}));
+  input.focus(); document.execCommand('insertText',false,u);
+  const btn = Array.from(document.querySelectorAll('button,input[type=submit],a'))
+    .find(el => /\\b(go!?|unblock|generate|submit)\\b/i.test((el.textContent||el.value||'')));
+  setTimeout(()=>{ (btn && btn.click()) || input.closest('form')?.submit(); }, 150);
+}catch(e){ alert('Autofill error: '+e.message); }})();`;
+
+const copyUrlCode = `
+javascript:(()=>{const t=location.href;
+  (navigator.clipboard?navigator.clipboard.writeText(t).then(()=>alert('Copied link to clipboard!')).catch(()=>fc()):fc());
+  function fc(){const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove(); alert('Copied link (fallback).');}
+})();`;
+
+autofillLink && (autofillLink.href = autofillCode.trim());
+copyUrlLink && (copyUrlLink.href = copyUrlCode.trim());
+
+// --- utilities ------------------------------------------------------------
 function toast(msg){
   const el = document.createElement('div');
   el.textContent = msg;
@@ -59,11 +114,13 @@ function toast(msg){
   document.body.appendChild(el);
   setTimeout(()=>el.remove(), 1800);
 }
+
 function fallbackCopy(text, msg='Copied (fallback).'){
   const ta=document.createElement('textarea');
   ta.value=text; document.body.appendChild(ta); ta.select();
   document.execCommand('copy'); ta.remove(); toast(msg);
 }
+
 async function copyText(text, message){
   if (!text) return false;
   try {
@@ -75,10 +132,10 @@ async function copyText(text, message){
     return false;
   }
 }
-function showResultCard(status){
+
+function showResultCard(){
   if (!resultCard) return;
   resultCard.classList.remove('hidden');
-  if (status && resultStatus) resultStatus.textContent = status;
 }
 
 function buildProxyUrl(raw){

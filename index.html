@@ -9,27 +9,46 @@
 <body>
   <main class="wrap">
     <h1>YT Unblocked Helper</h1>
-    <p class="sub">Paste a YouTube link, get a youtubeunblocked.live version instantly.</p>
+    <p class="sub">Paste a YouTube link. We'll hand you a youtubeunblocked.live URL instantly.</p>
 
-    <section class="card">
+    <section class="card primary">
       <label for="ytUrl">YouTube URL</label>
       <input id="ytUrl" type="url" placeholder="https://www.youtube.com/watch?v=VIDEO_ID" />
       <div class="row">
         <button id="generateLink">Get unblocked link</button>
-        <button id="copyInput">Copy original link</button>
+        <button id="copyInput" class="secondary">Copy original link</button>
+        <button id="openSite" class="ghost" type="button">Open youtubeunblocked.live</button>
       </div>
-      <p class="hint">We keep everything on this page—no extra tabs or bookmarklets needed.</p>
+      <p class="hint">Everything happens here—no extra tabs needed. Legacy bookmarklets live below if you still need them.</p>
     </section>
 
     <section id="resultCard" class="card hidden">
       <h2>Unblocked link</h2>
       <p class="hint">Share or open this link. It points to the same video through youtubeunblocked.live.</p>
       <div class="result-box">
-        <code id="resultUrl">https://youtubeunblocked.live/…</code>
+        <code id="resultUrl" title="Generated link">https://youtubeunblocked.live/…</code>
         <button id="copyResult">Copy unblocked link</button>
       </div>
       <p id="resultStatus" class="hint"></p>
     </section>
+
+    <details class="card legacy">
+      <summary>Legacy bookmarklet workflow (optional)</summary>
+      <div class="legacy-content">
+        <section>
+          <h2>Step 1 — Install / use the Autofill bookmarklet</h2>
+          <p>Drag this to your bookmarks bar, or right-click &rarr; “Bookmark link”. Then visit youtubeunblocked.live and click it.</p>
+          <a id="autofillLink" class="bookmarklet" href="#">Autofill &amp; Go</a>
+          <p class="hint">When clicked on youtubeunblocked.live, it will prompt you for a YouTube URL, place it into the big field, and press <b>Go!</b></p>
+        </section>
+        <section>
+          <h2>Step 2 — Copy the final link</h2>
+          <p>After the proxy opens the video page, click this bookmarklet to copy the current page URL.</p>
+          <a id="copyUrlLink" class="bookmarklet" href="#">Copy Current URL</a>
+          <p class="hint">Works on most modern browsers; includes a fallback if clipboard permissions are blocked.</p>
+        </section>
+      </div>
+    </details>
 
     <footer>
       <p>Need another? Just paste a new YouTube link above.</p>
